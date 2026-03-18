@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Weekly Gym Plan</title>
+  <meta name="description"
+    content="Personal weekly gym tracker — workout plans, progress tracking, daily motivation." />
+  <meta name="theme-color" content="#0f1117" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="GymPlan" />
+  <link id="pwa-manifest" rel="manifest" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    /* ── Tokens ─────────────────────────────────────────────── */
+    :root {
+      --bg-page: #0f1117;
+      --bg-primary: #181b24;
+      --bg-secondary: #1e2130;
+      --bg-card: #242838;
+      --bg-hover: #2a2f45;
+      --border-p: rgba(255, 255, 255, 0.09);
+      --border-s: rgba(255, 255, 255, 0.055);
+      --text-p: #f0f2f8;
+      --text-s: #8b92a8;
+      --text-t: #565d73;
+      --text-info: #7eb8f7;
+      --text-ok: #5ddba7;
+      --accent-blue: #3b82f6;
+      --accent-teal: #14b8a6;
+      --accent-green: #22c55e;
+      --accent-amber: #f59e0b;
+      --r-sm: 6px;
+      --r-md: 10px;
+      --r-lg: 14px;
+      --r-xl: 18px;
+      /* legacy aliases */
+      --color-background-primary: var(--bg-primary);
+      --color-background-secondary: var(--bg-secondary);
+      --color-background-info: rgba(59, 130, 246, 0.12);
+      --color-border-primary: var(--border-p);
+      --color-border-secondary: var(--border-s);
+      --color-border-tertiary: var(--border-s);
+      --color-border-info: rgba(59, 130, 246, 0.35);
+      --color-border-success: rgba(34, 197, 94, 0.25);
+      --color-text-primary: var(--text-p);
+      --color-text-secondary: var(--text-s);
+      --color-text-tertiary: var(--text-t);
+      --color-text-info: var(--text-info);
+      --color-text-success: var(--text-ok);
+      --border-radius-md: var(--r-md);
+      --border-radius-lg: var(--r-lg);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-p);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    .app-wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 1.75rem 1.25rem 5rem;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .app-header {
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-teal));
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 18px rgba(59, 130, 246, 0.3);
+    }
+
+    .header-text h1 {
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .header-text p {
+      font-size: 12px;
+      color: var(--text-s);
+      margin-top: 2px;
+    }
+
+    /* ── Tabs ───────────────────────────────────────────────── */
+    .day-tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      background: var(--bg-secondary);
+      padding: 5px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border-p);
+    }
+
+    .day-tab {
+      padding: 7px 12px;
+      border-radius: var(--r-md);
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-s);
+      transition: all 0.15s;
+      flex: 1;
+      text-align: center;
+      min-width: 66px;
+      position: relative;
+    }
+
+    .day-tab:hover:not(.active) {
+      background: var(--bg-hover);
+      color: var(--text-p);
+    }
+
+    .day-tab.active {
+      background: var(--bg-card);
+      color: var(--text-p);
+      border-color: var(--border-p);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .day-tab.today-tab::after {
+      content: '';
+      position: absolute;
+      bottom: 3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent-teal);
+    }
+
+    /* small done-badge on tab */
+    .tab-done-dot {
+      position: absolute;
+      top: 3px;
+      right: 4px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      border: 1.5px solid var(--bg-secondary);
+    }
+
+    /* ── Motivation Banner ──────────────────────────────────── */
+    .quote-banner {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(20, 184, 166, 0.08));
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: var(--r-xl);
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .quote-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+
+    .quote-text-wrap {
+      flex: 1;
+    }
+
+    .quote-text {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-p);
+      font-style: italic;
+      transition: opacity 0.4s;
+    }
+
+    .quote-author {
+      font-size: 11px;
+      color: var(--text-s);
+      margin-top: 3px;
+      font-style: normal;
+    }
+
+    .quote-refresh {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-p);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      color: var(--text-s);
+    }
+
+    .quote-refresh:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-p);
+      transform: rotate(20deg);
+    }
+
+    .quote-refresh.spinning {
+      animation: spin 0.5s linear;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── Progress Panel (overview) ──────────────────────────── */
+    .progress-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-p);
+      border-radius: var(--r-xl);
+      padding: 1.1rem 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-panel-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-t);
+      margin-bottom: 0.9rem;
+    }
+
+    .progress-week-label {
+      font-size: 12px;
+      color: var(--text-s);
+      margin-bottom: 0.65rem;
+    }
+
+    .progress-week-label span {
+      color: var(--text-p);
+      font-weight: 600;
+    }
+
+    .progress-bar-wrap {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 0.85rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-teal));
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-days-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .pd-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pd-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-p);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      transition: all 0.25s;
+      background: var(--bg-secondary);
+    }
+
+    .pd-dot.done {
+      background: rgba(34, 197, 94, 0.18);
+      border-color: rgba(34, 197, 94, 0.4);
+    }
+
+    .pd-dot.today {
+      border-color: var(--accent-teal);
+      box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
+    }
+
+    .pd-label {
+      font-size: 9.5px;
+      color: var(--text-t);
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+
+    .progress-reset-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 0.75rem;
+    }
+
+    .reset-btn {
+      font-size: 11px;
+      color: var(--text-t);
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border-s);
+      background: transparent;
+      transition: all 0.15s;
+    }
+
+    .reset-btn:hover {
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.07);
+    }
+
+    /* ── Section Label / Divider ────────────────────────────── */
+    .sec-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-t);
+      margin-bottom: 0.85rem;
+      margin-top: 1.5rem;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border-s);
+      margin: 1.25rem 0;
+    }
+
+    /* ── Week Overview ──────────────────────────────────────── */
+    .week-overview {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .wo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-p);
+      border-radius: var(--r-lg);
+      padding: 0.85rem 0.6rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wo-card:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+      transform: translateY(-1px);
+      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.3);
+    }
+
+    .wo-card.wo-done {
+      border-color: rgba(34, 197, 94, 0.3);
+      background: rgba(34, 197, 94, 0.05);
+    }
+
+    .wo-done-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .wo-day {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-t);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 3px;
+    }
+
+    .wo-name {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-p);
+      margin-bottom: 7px;
+      line-height: 1.35;
+    }
+
+    .wo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin: 0 auto 4px;
+    }
+
+    .wo-kcal {
+      font-size: 10px;
+      color: var(--text-t);
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* ── Equipment ──────────────────────────────────────────── */
+    .equip-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .equip-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-p);
+      border-radius: var(--r-lg);
+      padding: 0.9rem 1rem;
+      transition: border-color 0.15s;
+    }
+
+    .equip-card:hover {
+      border-color: rgba(255, 255, 255, 0.13);
+    }
+
+    .equip-card .ecat {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .equip-card h4 {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-p);
+      margin: 0 0 3px;
+    }
+
+    .equip-card p {
+      font-size: 11px;
+      color: var(--text-s);
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    /* ── Day Header ─────────────────────────────────────────── */
+    .day-header {
+      border-radius: var(--r-xl);
+      padding: 1.15rem 1.25rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .day-header h2 {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 0 0 5px;
+      letter-spacing: -0.3px;
+    }
+
+    .day-header p {
+      font-size: 12.5px;
+      margin: 0;
+      line-height: 1.65;
+      opacity: 0.85;
+    }
+
+    /* ── Summary Row ────────────────────────────────────────── */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    .scard {
+      background: var(--bg-card);
+      border: 1px solid var(--border-p);
+      border-radius: var(--r-md);
+      padding: 0.8rem 1rem;
+    }
+
+    .scard .lbl {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-t);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .scard .val {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-p);
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* ── Mark Day Done bar ──────────────────────────────────── */
+    .day-done-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1px solid var(--border-p);
+      border-radius: var(--r-lg);
+      padding: 0.8rem 1rem;
+      margin-bottom: 1.1rem;
+      gap: 10px;
+    }
+
+    .day-done-bar p {
+      font-size: 12.5px;
+      color: var(--text-s);
+    }
+
+    .day-done-bar p strong {
+      color: var(--text-p);
+    }
+
+    .mark-done-btn {
+      padding: 7px 16px;
+      border-radius: var(--r-md);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      background: rgba(34, 197, 94, 0.12);
+      color: #5ddba7;
+      transition: all 0.18s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .mark-done-btn:hover {
+      background: rgba(34, 197, 94, 0.22);
+    }
+
+    .mark-done-btn.is-done {
+      border-color: rgba(34, 197, 94, 0.6);
+      background: rgba(34, 197, 94, 0.18);
+      color: #4ade80;
+    }
+
+    .mark-done-btn.is-done::before {
+      content: '✓ ';
+    }
+
+    /* ── Timeline ───────────────────────────────────────────── */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tl-item {
+      display: grid;
+      grid-template-columns: 66px 14px 1fr;
+      gap: 0 13px;
+      align-items: start;
+    }
+
+    .tl-time {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-t);
+      font-family: 'DM Mono', monospace;
+      padding-top: 17px;
+      text-align: right;
+    }
+
+    .tl-spine {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tl-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-top: 18px;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .tl-line {
+      width: 2px;
+      flex: 1;
+      min-height: 18px;
+      opacity: 0.3;
+    }
+
+    /* ── Timeline Card ──────────────────────────────────────── */
+    .tl-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-p);
+      border-radius: var(--r-lg);
+      padding: 0.88rem 1rem;
+      margin: 5px 0 9px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      position: relative;
+    }
+
+    .tl-card:hover {
+      border-color: rgba(255, 255, 255, 0.13);
+      box-shadow: 0 3px 14px rgba(0, 0, 0, 0.22);
+    }
+
+    .tl-card.block-done {
+      border-color: rgba(34, 197, 94, 0.3);
+      background: rgba(34, 197, 94, 0.04);
+    }
+
+    .tl-card .tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tl-card h4 {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-p);
+      margin: 0 0 4px;
+      letter-spacing: -0.2px;
+      padding-right: 36px;
+    }
+
+    .tl-card .sets {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-info);
+      margin-bottom: 5px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .tl-card p {
+      font-size: 12px;
+      color: var(--text-s);
+      margin: 0;
+      line-height: 1.65;
+      white-space: pre-line;
+    }
+
+    .tl-card .equip {
+      font-size: 11px;
+      color: var(--text-t);
+      margin-top: 7px;
+      padding-top: 7px;
+      border-top: 1px solid var(--border-s);
+      display: flex;
+      align-items: flex-start;
+      gap: 5px;
+    }
+
+    .tl-card .equip::before {
+      content: '🔧';
+      font-size: 10px;
+      margin-top: 1px;
+    }
+
+    .tl-card .tip {
+      font-size: 11.5px;
+      color: var(--text-ok);
+      margin-top: 7px;
+      padding: 7px 10px;
+      border-radius: var(--r-sm);
+      background: rgba(34, 197, 94, 0.07);
+      border: 1px solid rgba(34, 197, 94, 0.14);
+      line-height: 1.55;
+    }
+
+    .tl-card .tip::before {
+      content: '💡 ';
+    }
+
+    /* ── Tick button ────────────────────────────────────────── */
+    .tick-btn {
+      position: absolute;
+      bottom: 9px;
+      right: 9px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-p);
+      background: rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      transition: all 0.2s;
+      color: var(--text-t);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tick-btn:hover {
+      border-color: rgba(34, 197, 94, 0.5);
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--text-ok);
+    }
+
+    .tick-btn.ticked {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: rgba(34, 197, 94, 0.55);
+      color: #4ade80;
+    }
+
+    @keyframes tickPop {
+      0% {
+        transform: scale(1)
+      }
+
+      50% {
+        transform: scale(1.35)
+      }
+
+      100% {
+        transform: scale(1)
+      }
+    }
+
+    .tick-btn.pop {
+      animation: tickPop 0.25s ease;
+    }
+
+    /* ── Video ──────────────────────────────────────────────── */
+    .video-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-info);
+      padding: 6px 12px;
+      border-radius: var(--r-md);
+      border: 1px solid rgba(59, 130, 246, 0.28);
+      background: rgba(59, 130, 246, 0.08);
+      width: fit-content;
+      user-select: none;
+      transition: all 0.15s;
+    }
+
+    .video-toggle:hover {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.45);
+    }
+
+    .video-wrap {
+      margin-top: 10px;
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      display: none;
+      border: 1px solid var(--border-p);
+    }
+
+    .video-wrap iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .video-wrap.open {
+      display: block;
+    }
+
+    /* ── Toaster ────────────────────────────────────────────── */
+    #toaster {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card);
+      border: 1px solid var(--border-p);
+      border-radius: var(--r-lg);
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-p);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    #toaster.show {
+      opacity: 1;
+    }
+
+    /* ── Scrollbar ──────────────────────────────────────────── */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-page);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-p);
+      border-radius: 3px;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .app-wrap {
+        padding: 1rem 0.9rem 4rem;
+      }
+
+      .week-overview {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .equip-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .day-tab {
+        font-size: 11.5px;
+        padding: 6px 9px;
+        min-width: 56px;
+      }
+
+      .tl-item {
+        grid-template-columns: 52px 12px 1fr;
+        gap: 0 9px;
+      }
+
+      .progress-days-row {
+        gap: 3px;
+      }
+
+      .pd-dot {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    #content>* {
+      animation: fadeUp 0.2s ease both;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-wrap">
+
+    <!-- Header -->
+    <div class="app-header">
+      <div class="header-icon">🏋️</div>
+      <div class="header-text">
+        <h1>Weekly Gym Plan</h1>
+        <p id="headerDate">Loading…</p>
+      </div>
+    </div>
+
+    <!-- Quote Banner -->
+    <div class="quote-banner">
+      <div class="quote-icon">💬</div>
+      <div class="quote-text-wrap">
+        <div class="quote-text" id="quoteText">Loading motivation…</div>
+        <div class="quote-author" id="quoteAuthor"></div>
+      </div>
+      <div class="quote-refresh" id="quoteRefreshBtn" title="New quote" onclick="fetchQuote()">↻</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="day-tabs" id="dayTabs">
+      <div class="day-tab active" onclick="showDay(0)">Overview</div>
+      <div class="day-tab" onclick="showDay(1)">Sun</div>
+      <div class="day-tab" onclick="showDay(2)">Mon</div>
+      <div class="day-tab" onclick="showDay(3)">Tue</div>
+      <div class="day-tab" onclick="showDay(4)">Wed</div>
+      <div class="day-tab" onclick="showDay(5)">Thu</div>
+      <div class="day-tab" onclick="showDay(6)">Fri &amp; Sat</div>
+    </div>
+
+    <div id="content"></div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toaster"></div>
+
+  <script>
+    /* ════════════════════════════════════════════════════════════
+       COLORS
+    ═══════════════════════════════════════════════════════════════ */
+    const C = {
+      blue: { bg: 'rgba(59,130,246,0.14)', tc: '#7eb8f7', dot: '#3b82f6', line: '#3b82f6' },
+      green: { bg: 'rgba(34,197,94,0.12)', tc: '#5ddba7', dot: '#22c55e', line: '#22c55e' },
+      amber: { bg: 'rgba(245,158,11,0.14)', tc: '#fbbf24', dot: '#f59e0b', line: '#f59e0b' },
+      purple: { bg: 'rgba(167,139,250,0.13)', tc: '#c4b5fd', dot: '#a78bfa', line: '#a78bfa' },
+      coral: { bg: 'rgba(248,113,113,0.13)', tc: '#fca5a5', dot: '#f87171', line: '#f87171' },
+      gray: { bg: 'rgba(148,163,184,0.1)', tc: '#94a3b8', dot: '#64748b', line: '#64748b' },
+      teal: { bg: 'rgba(20,184,166,0.12)', tc: '#5eead4', dot: '#14b8a6', line: '#14b8a6' },
+      red: { bg: 'rgba(239,68,68,0.13)', tc: '#fca5a5', dot: '#ef4444', line: '#ef4444' },
+    };
+
+    /* ════════════════════════════════════════════════════════════
+       DATA
+    ═══════════════════════════════════════════════════════════════ */
+    const overviewWeeks = [
+      { day: 'Sunday', name: 'Chest + Shoulders + Triceps', color: C.blue, kcal: '450–550' },
+      { day: 'Monday', name: 'Back + Biceps + Pull-up Prog.', color: C.teal, kcal: '430–530' },
+      { day: 'Tuesday', name: 'Cardio Day', color: C.coral, kcal: '600–780' },
+      { day: 'Wednesday', name: 'Legs + Glutes', color: C.purple, kcal: '500–620' },
+      { day: 'Thursday', name: 'Full Body + Core + Battle Rope', color: C.amber, kcal: '520–670' },
+    ];
+
+    const equipment = [
+      { cat: 'Cardio', catc: C.coral, name: 'Manual Treadmill House Fit', desc: 'Warm-up walks, incline walking on Tuesday. You power it yourself — harder than motorized, engages glutes more.' },
+      { cat: 'Cardio', catc: C.coral, name: 'Spinning Bike HF1759', desc: 'Main fat-burning tool. 25–40 min sessions. Zero joint impact. Burns 300–450 kcal at your weight per session.' },
+      { cat: 'Cardio', catc: C.coral, name: 'Water Rowing ALX ZF7900', desc: 'Full body: legs push → lean back → arms pull. 15–20 min interval sessions. Burns fat and builds back simultaneously.' },
+      { cat: 'Strength', catc: C.blue, name: 'Lat Pulldown + Row DHZ U2085', desc: 'Pull-up builder #1. Used every back day. Also doubles as seated row. Add weight every 2 weeks.' },
+      { cat: 'Strength', catc: C.blue, name: 'Cable Crossover DHZ U1017C', desc: 'Most versatile machine. Chest flyes, tricep pushdowns, face pulls, cable rows, lateral raises.' },
+      { cat: 'Strength', catc: C.blue, name: 'Squat Rack DHZ U3050 + Bars', desc: 'Bench press (7ft bar), overhead press (4ft bar), EZ curls, Romanian deadlifts, goblet squats, dead hangs.' },
+      { cat: 'Strength', catc: C.blue, name: 'Dumbbells 2.5–7.5 kg', desc: 'Lateral raises (4–5 kg), front raises, incline press (7.5 kg), goblet squats. Perfect starter set.' },
+      { cat: 'Core', catc: C.green, name: '3-in-1 Multi AB Bench ALX8029', desc: 'Decline crunches, incline dumbbell press, flat bench, seated work. Used 4 days per week.' },
+      { cat: 'Core', catc: C.green, name: 'Back Extension ALX8028', desc: 'Lower back strength — essential for squats and deadlifts. Bodyweight month 1, add plate month 3.' },
+      { cat: 'Power', catc: C.red, name: 'Battle Rope OK Pro OK1951', desc: 'Thursday HIIT finisher. Waves, slams, alternating. 20 sec on / 40 sec rest × 4 rounds. Zero joint stress.' },
+    ];
+
+    const days = [null,
+      {
+        name: 'Sunday', focus: 'Chest + Shoulders + Triceps', color: C.blue,
+        note: 'Pushing muscles day. Your Cable Crossover and Olympic bar on the Squat Rack are the stars. The 30-min walk = warm-up done on arrival.',
+        stats: ['~75 min', '450–550 kcal', 'Push muscles'],
+        blocks: [
+          { time: 'Pre-gym', tag: 'Nutrition', tc: C.amber, label: 'Pre-workout meal', sets: '', desc: '2 boiled eggs + 1 banana. Eat 25 min before the walk. Drink 400 ml water.', equip: '', tip: 'Never gym on empty stomach — you will feel dizzy and weak.', video: '' },
+          { time: 'Walk', tag: 'Cardio walk', tc: C.green, label: '30-min brisk walk to gym', sets: '', desc: 'Fast, purposeful walk. Chest up, arms swinging. By arrival your muscles are warm — this is your pulse raiser.', equip: '', tip: 'Burns 180–220 kcal at your weight. Free cardio every single day.', video: 'https://www.youtube.com/embed/L_S7X1V8kXo' },
+          { time: '5 min', tag: 'Warm-up', tc: C.gray, label: 'Dynamic mobility', sets: '', desc: 'Arm circles 15 each way · Shoulder rolls 10 · Hip circles 10 · 10 bodyweight squats.', equip: '', tip: 'The walk did most of the work — just 5 min of mobility here is enough.', video: 'https://www.youtube.com/embed/L_S7X1V8kXo' },
+          { time: 'Ex 1', tag: '4 sets × 12 reps', tc: C.blue, label: 'Barbell bench press', sets: '4 × 12 reps', desc: 'Rack 7ft Olympic bar at chest height. Lower to mid-chest slowly (3 sec), press up. Use safety pins — no spotter needed. Week 1: bar only (20 kg).', equip: 'Squat Rack DHZ U3050 + 7ft Olympic Bar + plates', tip: 'Week 1: bar only. Add 2.5 kg each side every 2 weeks.', video: 'https://www.youtube.com/embed/ev53hZTS8bs' },
+          { time: 'Ex 2', tag: '3 sets × 15 reps', tc: C.blue, label: 'Incline dumbbell press', sets: '3 × 15 reps', desc: 'Set AB Bench to incline (30–45°). Press 7.5 kg dumbbells from shoulder height straight up. Lower slowly 3 seconds. Builds upper chest.', equip: '3-in-1 AB Bench ALX8029 + 7.5 kg dumbbells', tip: 'Upper chest creates the "filled out shirt" look.', video: 'https://www.youtube.com/embed/gl8H4QLXKTo' },
+          { time: 'Ex 3', tag: '3 sets × 15 reps', tc: C.blue, label: 'Cable chest fly', sets: '3 × 15 reps', desc: 'Both cable pulleys set to HIGH on Cable Crossover. Stand in the middle. Bring handles together in a hugging arc. Hold squeeze 1 second. Return slowly.', equip: 'Cable Crossover DHZ U1017C — high pulleys', tip: 'Stretches chest fully — something bench press cannot do.', video: 'https://www.youtube.com/embed/I-Ue34qLxc4' },
+          { time: 'Ex 4', tag: '3 sets × 15 reps', tc: C.blue, label: 'Dumbbell lateral raise', sets: '3 × 15 reps', desc: 'Hold 4–5 kg dumbbells. Raise arms out to sides to shoulder height. Lower slowly. Zero swinging — strict form only. Creates shoulder width.', equip: '2.5–5 kg Dumbbells', tip: 'Go lighter than you think. Form breaks immediately with too much weight.', video: 'https://www.youtube.com/embed/nnH63icHYXY' },
+          { time: 'Ex 5', tag: '3 sets × 12 reps', tc: C.blue, label: 'Overhead press — 4ft bar', sets: '3 × 12 reps', desc: 'Set 4ft bar in Squat Rack at shoulder height. Press from shoulders straight overhead. Do NOT arch lower back. Start with bar only (10 kg).', equip: 'Squat Rack + 4ft Straight Olympic Bar', tip: '4ft bar is easier to handle than 7ft for this movement.', video: 'https://www.youtube.com/embed/4LBVP2Oe7fg' },
+          { time: 'Ex 6', tag: '3 sets × 15 reps', tc: C.blue, label: 'Tricep pushdown — cable', sets: '3 × 15 reps', desc: 'Cable Crossover HIGH pulley. Rope or bar attachment. Push down until arms fully extended. Keep elbows pinned to sides. Squeeze 1 second at bottom.', equip: 'Cable Crossover DHZ U1017C — high pulley', tip: 'Only your forearms move. Torso stays completely still.', video: 'https://www.youtube.com/embed/LXkCrxn3caQ' },
+          { time: 'Cool-down', tag: '7 min', tc: C.green, label: 'Chest + shoulder stretch', sets: '', desc: "Chest stretch using Squat Rack uprights 40 sec · Cross-body shoulder 30 sec each · Overhead tricep stretch 30 sec each · Child's pose 60 sec.", equip: '', tip: '', video: '' },
+        ]
+      },
+      {
+        name: 'Monday', focus: 'Back + Biceps + Pull-up Progression', color: C.teal,
+        note: 'Pulling day. Lat Pulldown is your #1 pull-up builder. Dead hangs start today. Every session here directly builds toward your first pull-up.',
+        stats: ['~75 min', '430–530 kcal', 'Back + arms'],
+        blocks: [
+          { time: 'Pre-gym', tag: 'Nutrition', tc: C.amber, label: 'Pre-workout meal', sets: '', desc: '2 eggs + banana or a handful of peanuts. Drink 400 ml water.', equip: '', tip: '', video: '' },
+          { time: 'Walk', tag: 'Cardio walk', tc: C.green, label: '30-min brisk walk to gym', sets: '', desc: 'Keep chest up and shoulders back — your back muscles gently activate the whole walk.', equip: '', tip: '', video: 'https://www.youtube.com/embed/L_S7X1V8kXo' },
+          { time: '5 min', tag: 'Warm-up', tc: C.gray, label: 'Dynamic warm-up — back focus', sets: '', desc: "Arm circles 20 each way · Cat-cow on floor 10 reps · Shoulder rolls 10 · Leg swings 15 each · 8 inchworms.", equip: '', tip: 'Cat-cow is critical before back day — wakes up the entire spine.', video: '' },
+          { time: 'Ex 1', tag: '4 sets × 12 reps', tc: C.teal, label: 'Lat pulldown', sets: '4 × 12 reps', desc: 'Grip bar wide. Pull down to collarbone. Lean back slightly. Squeeze lats at bottom. Return SLOWLY — 3 full seconds up.', equip: 'Lat Pulldown + Row DHZ U2085', tip: 'Every 2 weeks add 2.5–5 kg. When you pull 70–80 kg here your first pull-up is very close.', video: 'https://www.youtube.com/embed/oMJmAHRZXBk' },
+          { time: 'Ex 2', tag: '3 × 15 sec', tc: C.teal, label: 'Dead hang — pull-up bar', sets: '3 × 15 sec', desc: 'Hang from bar with straight arms. Do NOT try to pull up. Just hang. Rest 30 sec between holds. Builds grip and tendons.', equip: 'Squat Rack bar or Lat Pulldown bar', tip: 'Add 5 sec per week. Month 3 target: 3 × 30 sec then start negatives.', video: 'https://www.youtube.com/embed/5dr9GnW1wrU' },
+          { time: 'Ex 3', tag: '3 sets × 12 reps', tc: C.teal, label: 'Seated cable row', sets: '3 × 12 reps', desc: 'Lat Pulldown machine LOW pulley. Sit, pull handle to belly button. Squeeze shoulder blades together 1 second. Release slowly.', equip: 'Lat Pulldown + Row DHZ U2085 — low row', tip: 'Hands are hooks — let your back pull, not your arms.', video: 'https://www.youtube.com/embed/8QuMq1GMMng' },
+          { time: 'Ex 4', tag: '3 sets × 12 reps', tc: C.teal, label: 'Barbell row — 4ft bar', sets: '3 × 12 reps', desc: 'Load 4ft bar lightly. Hinge forward at hips with a FLAT back. Pull bar to belly. Lower slowly. Builds thick mid-back.', equip: '4ft Straight Olympic Bar + plates', tip: 'If your back rounds, the weight is too heavy. Reduce it immediately.', video: 'https://www.youtube.com/embed/A1tmBJKKfVs' },
+          { time: 'Ex 5', tag: '3 sets × 12 reps', tc: C.teal, label: 'EZ bar bicep curl', sets: '3 × 12 reps', desc: 'Hold EZ curl bar at angled grip. Curl to shoulders. Elbows stay at sides. Lower slowly. Easier on wrists than straight bar.', equip: '4ft Curl Olympic Bar + 2.5 kg plates each side', tip: 'Start with bar only (10 kg). Add 2.5 kg per side every 2 weeks.', video: 'https://www.youtube.com/embed/PpLPrakn0eQ' },
+          { time: 'Ex 6', tag: '3 sets × 15 reps', tc: C.teal, label: 'Cable face pull', sets: '3 × 15 reps', desc: 'Cable Crossover at eye level. Rope attachment. Pull to face with elbows flared wide and high. Think of pulling your ears apart.', equip: 'Cable Crossover DHZ U1017C — mid/high pulley + rope', tip: 'NEVER skip this. Best shoulder injury prevention exercise in existence.', video: 'https://www.youtube.com/embed/0Po47vvj9g4' },
+          { time: 'Cool-down', tag: '8 min', tc: C.green, label: 'Back + arm stretch', sets: '', desc: "Child's pose 60 sec · Hanging lat stretch 20 sec each side · Cross-body shoulder 30 sec each · Bicep wall stretch 30 sec each.", equip: '', tip: '', video: '' },
+        ]
+      },
+      {
+        name: 'Tuesday', focus: 'Cardio Day — Bike + Rowing + Treadmill', color: C.coral,
+        note: 'Pure fat-burning day. All 3 cardio machines in rotation. Walk + machines = your biggest calorie day of the entire week.',
+        stats: ['~75 min', '600–780 kcal', 'Max fat burn'],
+        blocks: [
+          { time: 'Pre-gym', tag: 'Nutrition', tc: C.amber, label: 'Light pre-cardio meal', sets: '', desc: '1 banana OR 1 boiled egg only. Cardio on a lighter stomach burns more fat directly. Drink 500 ml water.', equip: '', tip: 'If dizzy during cardio, eat slightly more next time.', video: '' },
+          { time: 'Walk', tag: 'Cardio starts NOW', tc: C.green, label: '30-min brisk walk to gym', sets: '', desc: 'This walk IS the start of your cardio today. Arrive already burning fat. Pace yourself — 45 min of machines ahead.', equip: '', tip: 'Near-fasted morning cardio = best time for direct fat oxidation.', video: 'https://www.youtube.com/embed/L_S7X1V8kXo' },
+          { time: 'Round 1', tag: '25 min', tc: C.coral, label: 'Spinning bike — main block', sets: '', desc: 'Start at level 6–7. Breathe noticeably but able to say short phrases. After 15 min, push resistance up 1–2 levels for the final 10 min. Sit upright.', equip: 'Spinning Bike Health Fit HF1759', tip: 'At 120 kg this burns 300–380 kcal in 25 min.', video: 'https://www.youtube.com/embed/76XnbF5DBFY' },
+          { time: 'Round 2', tag: '15 min', tc: C.coral, label: 'Water rowing — interval style', sets: '', desc: '40 sec moderate effort → 20 sec slow paddling. Repeat 15 minutes.\nForm: LEGS push first → LEAN back → ARMS pull.\nThis order prevents lower back strain.', equip: 'Water Rowing ALX Fitness ALX ZF7900', tip: 'Water resistance self-regulates — harder you pull, more resistance.', video: 'https://www.youtube.com/embed/d_jA5jdMWeE' },
+          { time: 'Round 3', tag: '10 min', tc: C.coral, label: 'Manual treadmill — incline walk', sets: '', desc: 'Maximum incline. Controlled walk pace. Manual treadmill is harder than motorized — you power it yourself. Light hands on rails if needed.', equip: 'Manual Treadmill House Fit', tip: 'Do NOT run yet. Incline walking at 120 kg burns nearly as many calories as jogging with zero knee impact.', video: 'https://www.youtube.com/embed/4WRc7LLL66w' },
+          { time: 'Cool-down', tag: '10 min', tc: C.green, label: 'Full lower body stretch', sets: '', desc: "5 min very slow treadmill walk · Quad stretch 40 sec each · Hip flexor lunge 45 sec each · Figure-4 glute stretch 40 sec each · Child's pose 60 sec.", equip: '', tip: 'Stretch thoroughly — Tuesday cardio + Wednesday leg day back to back is tough on legs.', video: '' },
+        ]
+      },
+      {
+        name: 'Wednesday', focus: 'Legs + Glutes + Back Extension', color: C.purple,
+        note: 'Most important day for fat loss. Legs are your biggest muscles. No barbell squat yet — RDLs and goblet squats teach you the patterns safely first.',
+        stats: ['~75 min', '500–620 kcal', 'Legs + glutes'],
+        blocks: [
+          { time: 'Pre-gym', tag: 'Nutrition', tc: C.amber, label: 'Biggest meal of the week', sets: '', desc: '2–3 eggs + 1 banana + small rice or roti. Eat 30 min before walking. Leg day demands the most energy.', equip: '', tip: 'Do not shortchange this meal.', video: '' },
+          { time: 'Walk', tag: 'Cardio walk', tc: C.green, label: '30-min brisk walk to gym', sets: '', desc: 'Walk loosens hips, knees and ankles — perfect pre-leg warm-up. Full strides. Leg joints warm and lubricated by arrival.', equip: '', tip: '', video: 'https://www.youtube.com/embed/L_S7X1V8kXo' },
+          { time: '7 min', tag: 'Warm-up', tc: C.gray, label: 'Extended leg warm-up', sets: '', desc: "Leg swings front/back 15 each · Side swings 15 each · Hip circles 10 each · 15 slow bodyweight squats · 10 glute bridges on floor.", equip: '', tip: '7 minutes non-negotiable on leg day. Cold legs under load = pulled muscle.', video: '' },
+          { time: 'Ex 1', tag: '4 sets × 12 reps', tc: C.purple, label: 'Romanian deadlift (RDL)', sets: '4 × 12 reps', desc: '7ft bar on floor. Start bar only (20 kg). Hinge at hips, lower bar down legs until strong hamstring stretch, drive hips forward to stand. Back FLAT entire time.', equip: '7ft Olympic Bar + plates', tip: 'Week 1: bar only. Master the hip hinge before adding weight.', video: 'https://www.youtube.com/embed/xvwud9zo24U' },
+          { time: 'Ex 2', tag: '3 sets × 15 reps', tc: C.purple, label: 'Goblet squat — dumbbell', sets: '3 × 15 reps', desc: 'Hold 7.5 kg dumbbell at chest. Feet shoulder-width. Squat deep — hips below knees if possible. Chest tall. Teaches perfect squat form safely before barbell.', equip: '7.5 kg Dumbbell', tip: 'By month 3 you will move to barbell back squat in the Squat Rack.', video: 'https://www.youtube.com/embed/NIrcxSkwui8' },
+          { time: 'Ex 3', tag: '3 sets × 20 reps', tc: C.purple, label: 'Glute bridge — bodyweight', sets: '3 × 20 reps', desc: 'Lie on back, knees bent, feet flat. Drive hips up squeezing glutes hard. Hold 2 seconds at top. Lower slowly. Zero spinal compression — safest glute exercise.', equip: 'Floor mat', tip: 'Month 1 bodyweight → month 2 add 5 kg plate on hips → month 3 use barbell.', video: 'https://www.youtube.com/embed/nuapk_-Q2BI' },
+          { time: 'Ex 4', tag: '3 sets × 15 reps', tc: C.purple, label: 'Back extension', sets: '3 × 15 reps', desc: 'Secure feet. Arms crossed on chest. Hinge forward until lower back stretch, then raise back to horizontal only — do NOT go past flat. Builds lower back for squats and deadlifts.', equip: 'Back Extension ALX8028', tip: 'Month 1: bodyweight only. Month 3: hold 2.5 kg plate at chest.', video: 'https://www.youtube.com/embed/qtjJUWCnDyE' },
+          { time: 'Ex 5', tag: '3 sets × 20 reps', tc: C.purple, label: 'Standing calf raise — with bar', sets: '3 × 20 reps', desc: 'Bar across upper back in Squat Rack. Stand on a 5 kg plate so heels can drop below. Rise on toes as high as possible. Hold 1 sec. Drop for full stretch.', equip: 'Squat Rack + 7ft Bar + 5 kg plate to stand on', tip: 'High reps for calves — they need volume to respond. 20 reps minimum.', video: '' },
+          { time: 'Ex 6', tag: '3 sets × 12 reps', tc: C.purple, label: 'Cable pull-through', sets: '3 × 12 reps', desc: 'Cable Crossover LOWEST pulley. Stand facing AWAY from machine. Rope between legs. Hinge forward then squeeze glutes to stand. Great for glutes and hamstrings.', equip: 'Cable Crossover DHZ U1017C — low pulley + rope', tip: 'Teaches deadlift hip hinge pattern safely. Feels awkward first time — persevere.', video: 'https://www.youtube.com/embed/VRDxdi2d-2c' },
+          { time: 'Cool-down', tag: '10 min', tc: C.green, label: 'Full leg stretch', sets: '', desc: "Quad stretch 40 sec each · Hamstring on AB Bench 40 sec each · Hip flexor lunge 45 sec each · Figure-4 glute stretch 40 sec each · Child's pose 60 sec.", equip: '', tip: 'Wednesday DOMS peaks 48 hrs later. Thorough stretching now = significantly less pain Friday.', video: '' },
+        ]
+      },
+      {
+        name: 'Thursday', focus: 'Full Body + Core + Battle Rope Finisher', color: C.amber,
+        note: 'Final gym day of the week. Lighter weights, full body, strong core work. The Battle Rope finisher is your highest intensity burst — it will humble you and that is good.',
+        stats: ['~80 min', '520–670 kcal', 'Full body + HIIT'],
+        blocks: [
+          { time: 'Pre-gym', tag: 'Nutrition', tc: C.amber, label: 'Pre-workout meal', sets: '', desc: '2 boiled eggs + banana. Drink 500 ml water. Last big day of the week.', equip: '', tip: '', video: '' },
+          { time: 'Walk', tag: 'Cardio walk', tc: C.green, label: '30-min brisk walk to gym', sets: '', desc: 'Last walk of the gym week. Notice how much easier this feels vs Sunday — that improvement IS your fitness building.', equip: '', tip: 'When this walk feels easy (week 4–5), add a 2-min jog burst in the middle.', video: 'https://www.youtube.com/embed/L_S7X1V8kXo' },
+          { time: '5 min', tag: 'Warm-up', tc: C.gray, label: 'Full body dynamic warm-up', sets: '', desc: "Arm circles · Hip circles · Leg swings · 8 inchworms · 10 bodyweight squats · 5 slow push-up negatives.", equip: '', tip: '', video: '' },
+          { time: 'Ex 1', tag: '3 sets × 15 reps', tc: C.amber, label: 'Bench press — lighter', sets: '3 × 15 reps', desc: 'Use 15–20% less weight than Sunday. Higher reps, controlled form. Feel the chest working.', equip: 'Squat Rack DHZ U3050 + 7ft Bar + plates', tip: '', video: 'https://www.youtube.com/embed/ev53hZTS8bs' },
+          { time: 'Ex 2', tag: '3 sets × 15 reps', tc: C.amber, label: 'Lat pulldown — lighter', sets: '3 × 15 reps', desc: '15% less than Monday. Full range — arms fully extended at top, bar all the way to collarbone. Slow and deliberate.', equip: 'Lat Pulldown + Row DHZ U2085', tip: '', video: 'https://www.youtube.com/embed/oMJmAHRZXBk' },
+          { time: 'Ex 3', tag: '3 sets × 15 reps', tc: C.amber, label: 'Romanian deadlift — lighter', sets: '3 × 15 reps', desc: "60–70% of Wednesday's weight. Reinforces the movement pattern without overloading recovering hamstrings.", equip: '7ft Olympic Bar + plates', tip: '', video: 'https://www.youtube.com/embed/xvwud9zo24U' },
+          { time: 'Ex 4', tag: '3 sets × 25 sec', tc: C.amber, label: 'Plank hold', sets: '3 × 25 sec', desc: 'Forearms and toes on floor. Body completely straight. Hips cannot sag or rise. Breathe normally.', equip: 'Floor mat', tip: 'Week 1: 20–25 sec. Month 2 target: 3 × 45 sec. Month 3 target: 3 × 60 sec.', video: 'https://www.youtube.com/embed/8b13VkLlHeo' },
+          { time: 'Ex 5', tag: '3 sets × 15 reps', tc: C.amber, label: 'Decline ab crunch', sets: '3 × 15 reps', desc: 'Set AB Bench to DECLINE. Hook feet under pad. Arms crossed on chest. Crunch upward squeezing abs. Lower slowly. Do not pull neck.', equip: '3-in-1 Multi AB Bench ALX8029 — decline position', tip: 'Slow and controlled. Feel abs doing the work — not hip flexors.', video: 'https://www.youtube.com/embed/FRzQXeN1hro' },
+          { time: 'Ex 6', tag: '3 × 20 sec', tc: C.amber, label: 'Dead hang practice', sets: '3 × 20 sec', desc: 'Hang from bar with straight arms. Let gravity stretch your lats and decompress your spine. Grip improves noticeably each week.', equip: 'Squat Rack bar or Lat Pulldown bar', tip: '', video: 'https://www.youtube.com/embed/5dr9GnW1wrU' },
+          { time: 'FINISHER', tag: 'Battle Rope — 4 rounds', tc: C.red, label: 'Battle Rope HIIT — big finish', sets: '4 rounds total', desc: 'Round 1: Double arm waves — both arms up/down. 20 sec ON · 40 sec rest.\nRound 2: Alternating waves — right up while left down. 20 sec ON · 40 sec rest.\nRound 3: Rope slams — lift overhead and slam to ground. 15 sec ON · 45 sec rest.\nRound 4: Alternating waves again. 20 sec ON · rest.\n\nThis will feel very hard. That is correct.', equip: 'Battle Rope OK Pro OK1951', tip: '100% safe at 120 kg — zero joint impact. Burns 300–400 kcal/hr.', video: 'https://www.youtube.com/embed/pQb2xIGioyQ' },
+          { time: 'Cool-down', tag: '10 min', tc: C.green, label: 'Full body stretch — end of gym week', sets: '', desc: "Child's pose 60 sec · Quad stretch 40 sec each · Hamstring 40 sec each · Hip flexor lunge 45 sec each · Chest doorway stretch 40 sec · Shoulder cross-body 30 sec each · Seated spinal twist 30 sec each side.", equip: '', tip: 'You completed 5 days + 2.5 hours of walking this week. Friday and Saturday rest is when your body actually transforms.', video: '' },
+        ]
+      },
+      {
+        name: 'Friday & Saturday', focus: 'Active rest — walk, stretch, sleep', color: C.gray,
+        note: 'No gym. Light activity keeps your metabolism running, reduces soreness, and sets you up for Sunday.',
+        stats: ['30–45 min walk', 'Light activity', 'Full recovery'],
+        blocks: [
+          { time: 'Morning', tag: 'Both days', tc: C.green, label: 'Easy morning walk — 30–45 min', sets: '', desc: 'Relaxed stroll both days. Not the fast gym walk — just comfortable movement. Keeps metabolism active and flushes soreness.', equip: '', tip: 'Aim for 8,000–10,000 steps across the whole day.', video: '' },
+          { time: 'Evening', tag: 'Both days', tc: C.green, label: 'Full body stretch — 10 min', sets: '', desc: "Quad stretch · Hamstring stretch · Hip flexor stretch · Child's pose · Shoulder cross-body stretch. Hold each 40 seconds.", equip: '', tip: 'The more consistently you stretch on rest days, the less sore you are on Sunday.', video: '' },
+          { time: 'All day', tag: 'Non-negotiable', tc: C.amber, label: 'Eat protein + sleep 8 hours', sets: '', desc: 'Keep eating 130–140g protein daily. Do not use rest days as cheat days. Sleep 8 full hours both nights. Muscle is built during sleep, not in the gym.', equip: '', tip: 'Under 6 hrs sleep increases hunger hormones 20–30% and causes fat storage even in a calorie deficit.', video: '' },
+          { time: 'Optional', tag: 'Bonus', tc: C.blue, label: 'Swimming — if available', sets: '', desc: '30 min of easy swimming on one of these days is perfect active recovery. Water supports your bodyweight and moves blood through sore muscles.', equip: '', tip: 'No laps needed — just move easily through the water.', video: '' },
+        ]
+      }
+    ];
+
+    /* ════════════════════════════════════════════════════════════
+       STORAGE — localStorage with weekly auto-expiry
+       Key format: gymtracker_YYYY-Www  (ISO week)
+    ═══════════════════════════════════════════════════════════════ */
+    function getISOWeekKey() {
+      const now = new Date();
+      // ISO week number
+      const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      return `gymtracker_${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+    }
+
+    function loadState() {
+      try {
+        const key = getISOWeekKey();
+        const raw = localStorage.getItem(key);
+        if (!raw) return { dayDone: {}, blockDone: {} };
+        return JSON.parse(raw);
+      } catch (e) { return { dayDone: {}, blockDone: {} }; }
+    }
+
+    function saveState(state) {
+      try {
+        // Remove old week keys
+        const curKey = getISOWeekKey();
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('gymtracker_') && k !== curKey) {
+            localStorage.removeItem(k); i--;
+          }
+        }
+        localStorage.setItem(curKey, JSON.stringify(state));
+      } catch (e) { }
+    }
+
+    let STATE = loadState();
+
+    function isDayDone(dayIdx) { return !!STATE.dayDone[dayIdx]; }
+    function isBlockDone(dayIdx, blockIdx) { return !!STATE.blockDone[`${dayIdx}_${blockIdx}`]; }
+
+    function toggleBlock(dayIdx, blockIdx, el, tickBtn) {
+      const key = `${dayIdx}_${blockIdx}`;
+      const wasDone = !!STATE.blockDone[key];
+      STATE.blockDone[key] = !wasDone;
+      saveState(STATE);
+      el.classList.toggle('block-done', !wasDone);
+      tickBtn.classList.toggle('ticked', !wasDone);
+      tickBtn.classList.add('pop');
+      tickBtn.addEventListener('animationend', () => tickBtn.classList.remove('pop'), { once: true });
+      toast(!wasDone ? '✓ Marked done' : 'Unmarked');
+      updateTabBadges();
+    }
+
+    function toggleDayDone(dayIdx) {
+      const wasDone = isDayDone(dayIdx);
+      STATE.dayDone[dayIdx] = !wasDone;
+      saveState(STATE);
+      const btn = document.getElementById('markDoneBtn');
+      if (btn) {
+        btn.classList.toggle('is-done', !wasDone);
+        btn.textContent = !wasDone ? 'Day Complete!' : 'Mark Day Done';
+      }
+      updateTabBadges();
+      toast(!wasDone ? '🎉 Day marked complete!' : 'Day unmarked');
+    }
+
+    function resetWeek() {
+      if (!confirm('Reset all tracking for this week?')) return;
+      STATE = { dayDone: {}, blockDone: {} };
+      saveState(STATE);
+      updateTabBadges();
+      showDay(0);
+      toast('Week reset ✓');
+    }
+
+    function countDoneDays() {
+      return Object.keys(STATE.dayDone).filter(k => STATE.dayDone[k]).length;
+    }
+
+    function updateTabBadges() {
+      const tabs = document.querySelectorAll('.day-tab');
+      // tabs: 0=overview, 1=Sun(day1)..6=Fri&Sat(day6)
+      for (let i = 1; i <= 6; i++) {
+        const tab = tabs[i];
+        if (!tab) continue;
+        const existing = tab.querySelector('.tab-done-dot');
+        if (isDayDone(i)) {
+          if (!existing) {
+            const dot = document.createElement('span');
+            dot.className = 'tab-done-dot';
+            tab.appendChild(dot);
+          }
+        } else {
+          if (existing) existing.remove();
+        }
+      }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       QUOTES  — QuoteSlate (free, no key, CORS)
+       Fallback: DummyJSON (also free, no key, CORS)
+    ═══════════════════════════════════════════════════════════════ */
+    // Curated fitness/discipline tags for QuoteSlate
+    const QUOTE_TAGS = ['motivation', 'success', 'perseverance', 'discipline', 'health', 'wisdom', 'strength', 'goals'];
+
+    // Fallback local quotes in case both APIs fail
+    const LOCAL_QUOTES = [
+      { q: "The body achieves what the mind believes.", a: "Napoleon Hill" },
+      { q: "Take care of your body. It's the only place you have to live.", a: "Jim Rohn" },
+      { q: "Success is the sum of small efforts repeated day in and day out.", a: "Robert Collier" },
+      { q: "Your body can stand almost anything. It's your mind that you have to convince.", a: "Unknown" },
+      { q: "The pain you feel today will be the strength you feel tomorrow.", a: "Arnold Schwarzenegger" },
+      { q: "Don't wish for it, work for it.", a: "Unknown" },
+      { q: "Discipline is the bridge between goals and accomplishment.", a: "Jim Rohn" },
+      { q: "Believe in yourself and all that you are. Know that there is something inside you that is greater than any obstacle.", a: "Christian D. Larson" },
+      { q: "Strive for progress, not perfection.", a: "Unknown" },
+      { q: "The secret of getting ahead is getting started.", a: "Mark Twain" },
+      { q: "If it doesn't challenge you, it doesn't change you.", a: "Fred DeVito" },
+      { q: "Push yourself because no one else is going to do it for you.", a: "Unknown" },
+      { q: "Great things never come from comfort zones.", a: "Unknown" },
+      { q: "It's not about having time. It's about making time.", a: "Unknown" },
+      { q: "The only bad workout is the one that didn't happen.", a: "Unknown" },
+    ];
+
+    let lastLocalIdx = -1;
+
+    async function fetchQuote() {
+      const textEl = document.getElementById('quoteText');
+      const authorEl = document.getElementById('quoteAuthor');
+      const refreshBtn = document.getElementById('quoteRefreshBtn');
+
+      textEl.style.opacity = '0.3';
+      refreshBtn.classList.add('spinning');
+
+      const tag = QUOTE_TAGS[Math.floor(Math.random() * QUOTE_TAGS.length)];
+
+      try {
+        // Primary: QuoteSlate — free, no auth, CORS enabled
+        const res = await fetch(`https://quoteslate.vercel.app/api/quotes/random?tags=${tag}`, { signal: AbortSignal.timeout(4000) });
+        if (!res.ok) throw new Error('QuoteSlate failed');
+        const data = await res.json();
+        const quote = data.quote || data.content || data.text;
+        const author = data.author || '';
+        if (quote) {
+          textEl.textContent = `"${quote}"`;
+          authorEl.textContent = author ? `— ${author}` : '';
+          textEl.style.opacity = '1';
+          refreshBtn.classList.remove('spinning');
+          return;
+        }
+        throw new Error('No quote content');
+      } catch (e) {
+        // Fallback: DummyJSON
+        try {
+          const res2 = await fetch('https://dummyjson.com/quotes/random', { signal: AbortSignal.timeout(4000) });
+          if (!res2.ok) throw new Error('DummyJSON failed');
+          const data2 = await res2.json();
+          if (data2.quote) {
+            textEl.textContent = `"${data2.quote}"`;
+            authorEl.textContent = data2.author ? `— ${data2.author}` : '';
+            textEl.style.opacity = '1';
+            refreshBtn.classList.remove('spinning');
+            return;
+          }
+          throw new Error('No quote content');
+        } catch (e2) {
+          // Last resort: local pool
+          let idx;
+          do { idx = Math.floor(Math.random() * LOCAL_QUOTES.length); }
+          while (idx === lastLocalIdx && LOCAL_QUOTES.length > 1);
+          lastLocalIdx = idx;
+          const q = LOCAL_QUOTES[idx];
+          textEl.textContent = `"${q.q}"`;
+          authorEl.textContent = q.a ? `— ${q.a}` : '';
+        }
+      }
+      textEl.style.opacity = '1';
+      refreshBtn.classList.remove('spinning');
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       TOAST
+    ═══════════════════════════════════════════════════════════════ */
+    let toastTimer;
+    function toast(msg) {
+      const el = document.getElementById('toaster');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       DATE / DAY LOGIC
+    ═══════════════════════════════════════════════════════════════ */
+    function getTodayTabIndex() {
+      const dow = new Date().getDay(); // 0=Sun,1=Mon,...,6=Sat
+      if (dow === 0) return 1;
+      if (dow === 1) return 2;
+      if (dow === 2) return 3;
+      if (dow === 3) return 4;
+      if (dow === 4) return 5;
+      return 6; // Fri or Sat
+    }
+
+    function markTodayTab() {
+      const idx = getTodayTabIndex();
+      const tabs = document.querySelectorAll('.day-tab');
+      if (tabs[idx]) tabs[idx].classList.add('today-tab');
+    }
+
+    function updateHeaderDate() {
+      const now = new Date();
+      document.getElementById('headerDate').textContent =
+        now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) +
+        ' · ' + now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       RENDER
+    ═══════════════════════════════════════════════════════════════ */
+    function showDay(i) {
+      document.querySelectorAll('.day-tab').forEach((t, j) => t.classList.toggle('active', j === i));
+      const el = document.getElementById('content');
+
+      if (i === 0) {
+        // ── Overview ──────────────────────────────────────────────
+        const done = countDoneDays();
+        const total = 6;
+        const pct = Math.round((done / total) * 100);
+        const DOW_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const todayDow = new Date().getDay();
+        // day tab indices: 1=Sun(0),2=Mon(1),...,5=Thu(4),6=Fri/Sat(5/6)
+        const tabMap = [1, 2, 3, 4, 5, 6, 6]; // dow → tab index
+
+        let daysRow = '';
+        DOW_LABELS.forEach((lbl, dow) => {
+          const tabIdx = tabMap[dow];
+          const done_ = isDayDone(tabIdx);
+          const isToday = dow === todayDow;
+          daysRow += `<div class="pd-cell">
+        <div class="pd-dot${done_ ? ' done' : ''}${isToday ? ' today' : ''}">${done_ ? '✓' : '·'}</div>
+        <div class="pd-label">${lbl}</div>
+      </div>`;
+        });
+
+        let h = `
+      <div class="progress-panel">
+        <div class="progress-panel-title">This week's progress</div>
+        <div class="progress-week-label">You completed <span>${done} of ${total}</span> training days</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+        <div class="progress-days-row">${daysRow}</div>
+        <div class="progress-reset-row"><button class="reset-btn" onclick="resetWeek()">Reset week</button></div>
+      </div>
+      <div class="sec-label">Weekly schedule — click a day</div>
+      <div class="week-overview">`;
+
+        overviewWeeks.forEach((w, idx) => {
+          const tabIdx = idx + 1;
+          const dayIsDone = isDayDone(tabIdx);
+          h += `<div class="wo-card${dayIsDone ? ' wo-done' : ''}" onclick="showDay(${tabIdx})">
+        ${dayIsDone ? '<div class="wo-done-badge">✓</div>' : ''}
+        <div class="wo-day">${w.day}</div>
+        <div class="wo-name">${w.name}</div>
+        <div class="wo-dot" style="background:${w.color.dot}"></div>
+        <div class="wo-kcal">${w.kcal} kcal</div>
+      </div>`;
+        });
+
+        h += `</div><div class="divider"></div>
+      <div class="sec-label">Your equipment — how each piece is used</div>
+      <div class="equip-grid">`;
+        equipment.forEach(e => {
+          h += `<div class="equip-card">
+        <div class="ecat" style="background:${e.catc.bg};color:${e.catc.tc}">${e.cat}</div>
+        <h4>${e.name}</h4><p>${e.desc}</p>
+      </div>`;
+        });
+        h += '</div>';
+        el.innerHTML = h;
+        return;
+      }
+
+      // ── Day View ───────────────────────────────────────────────
+      const d = days[i];
+      const c = d.color;
+      const dayIsDone = isDayDone(i);
+
+      let h = `<div class="day-header" style="background:${c.bg};color:${c.tc}">
+    <h2>${d.name} — ${d.focus}</h2><p>${d.note}</p>
+  </div>`;
+
+      h += `<div class="summary-row">
+    <div class="scard"><div class="lbl">Total time</div><div class="val">${d.stats[0]}</div></div>
+    <div class="scard"><div class="lbl">Est. calories</div><div class="val">${d.stats[1]}</div></div>
+    <div class="scard"><div class="lbl">Focus</div><div class="val" style="font-size:12px">${d.stats[2]}</div></div>
+  </div>`;
+
+      h += `<div class="day-done-bar">
+    <p>Finished today's workout? <strong>Mark it done</strong> to track your week.</p>
+    <button id="markDoneBtn" class="mark-done-btn${dayIsDone ? ' is-done' : ''}" onclick="toggleDayDone(${i})">
+      ${dayIsDone ? 'Day Complete!' : 'Mark Day Done'}
+    </button>
+  </div>`;
+
+      h += '<div class="timeline">';
+      d.blocks.forEach((b, idx) => {
+        const bc = b.tc;
+        const last = idx === d.blocks.length - 1;
+        const vid_id = `d${i}_b${idx}`;
+        const blkDone = isBlockDone(i, idx);
+        h += `<div class="tl-item">
+      <div class="tl-time">${b.time}</div>
+      <div class="tl-spine">
+        <div class="tl-dot" style="background:${bc.dot}"></div>
+        ${!last ? `<div class="tl-line" style="background:${bc.line}"></div>` : ''}
+      </div>
+      <div class="tl-card${blkDone ? ' block-done' : ''}" id="card_${i}_${idx}">
+        <div class="tag" style="background:${bc.bg};color:${bc.tc}">${b.tag}</div>
+        <h4>${b.label}</h4>
+        ${b.sets ? `<div class="sets">${b.sets}</div>` : ''}
+        <p>${b.desc}</p>
+        ${b.equip ? `<div class="equip">${b.equip}</div>` : ''}
+        ${b.tip ? `<div class="tip">${b.tip}</div>` : ''}
+        ${b.video ? `
+          <div class="video-toggle" id="vb-${vid_id}" onclick="toggleVideo('${vid_id}')">▶ Watch exercise video</div>
+          <div class="video-wrap" id="vw-${vid_id}">
+            <iframe src="${b.video}?rel=0&modestbranding=1" allowfullscreen loading="lazy"></iframe>
+          </div>` : ''}
+        <button class="tick-btn${blkDone ? ' ticked' : ''}" id="tick_${i}_${idx}"
+          onclick="toggleBlock(${i},${idx},document.getElementById('card_${i}_${idx}'),this)"
+          title="${blkDone ? 'Unmark' : 'Mark complete'}">
+          ${blkDone ? '✓' : '○'}
+        </button>
+      </div>
+    </div>`;
+      });
+      h += '</div>';
+      el.innerHTML = h;
+    }
+
+    function toggleVideo(id) {
+      const wrap = document.getElementById('vw-' + id);
+      const btn = document.getElementById('vb-' + id);
+      if (!wrap) return;
+      const isOpen = wrap.classList.contains('open');
+      wrap.classList.toggle('open', !isOpen);
+      btn.textContent = isOpen ? '▶ Watch exercise video' : '✕ Hide video';
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PWA — inline manifest (no server needed)
+    ═══════════════════════════════════════════════════════════════ */
+    function setupPWA() {
+      const manifest = {
+        name: "Weekly Gym Plan",
+        short_name: "GymPlan",
+        description: "Personal weekly gym tracker with workout plans and progress tracking.",
+        start_url: "./",
+        display: "standalone",
+        background_color: "#0f1117",
+        theme_color: "#0f1117",
+        orientation: "portrait-primary",
+        icons: [
+          { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%230f1117'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='110'%3E🏋️%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" },
+          { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230f1117'/%3E%3Ctext x='256' y='350' text-anchor='middle' font-size='300'%3E🏋️%3C/text%3E%3C/svg%3E", sizes: "512x512", type: "image/svg+xml" }
+        ]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+      document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+
+      // Register inline service worker via blob
+      if ('serviceWorker' in navigator) {
+        const swCode = `
+      const CACHE = 'gymplan-v1';
+      const ASSETS = ['./', location.href];
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(()=>{}));
+        self.skipWaiting();
+      });
+      self.addEventListener('activate', e => {
+        e.waitUntil(caches.keys().then(keys =>
+          Promise.all(keys.filter(k => k!==CACHE).map(k => caches.delete(k)))
+        ));
+        self.clients.claim();
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(
+          caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => cached))
+        );
+      });
+    `;
+        const swBlob = new Blob([swCode], { type: 'application/javascript' });
+        const swURL = URL.createObjectURL(swBlob);
+        navigator.serviceWorker.register(swURL, { scope: './' }).catch(() => { });
+      }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       INIT
+    ═══════════════════════════════════════════════════════════════ */
+    setupPWA();
+    updateHeaderDate();
+    setInterval(updateHeaderDate, 60000);
+    markTodayTab();
+    updateTabBadges();
+    fetchQuote();
+    showDay(getTodayTabIndex());
+  </script>
+</body>
+
+</html>
